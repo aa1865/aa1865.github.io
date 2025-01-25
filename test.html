@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Filter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            padding-top: 60px; /* Ensure space for the fixed search box */
+        }
+
+        input, textarea {
+            padding: 12px;
+            width: 100%;
+            margin-bottom: 20px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        #searchBox {
+            position: fixed;
+            top: 20px; /* Fixed position, 20px from the top */
+            left: 0;
+            width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #fff;
+            z-index: 10; /* Ensure it stays on top of other elements */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 100px; /* Space for the fixed search box */
+            background-color: #fff;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 20px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            input, textarea {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+
+        footer {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 20px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="searchBox" placeholder="Search by field..." onkeyup="filterResults()" />
+
+    <div class="table-container">
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Function to fetch and parse CSV file
+        async function loadCSVData() {
+            const response = await fetch('data.csv');
+            const csvText = await response.text();
+            return parseCSV(csvText);
+        }
+
+        // Parse CSV text into an array of objects
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const headers = ['Name', 'Price']; // Hardcode header
+            const data = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const row = lines[i].split(',');
+                if (row.length === headers.length) {
+                    const rowData = {};
+                    for (let j = 0; j < headers.length; j++) {
+                        rowData[headers[j].trim()] = row[j].trim();
+                    }
+                    data.push(rowData);
+                }
+            }
+
+            return data;
+        }
+
+        // Display data in the table
+        function displayData(data) {
+            const tbody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = ''; // Clear previous data
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                for (const key in row) {
+                    const td = document.createElement('td');
+                    td.textContent = row[key];
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Filter data based on the search box input (only by the "Name" field)
+        function filterResults() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            const filteredData = csvDataArray.filter(row => {
+                return row.Name.toLowerCase().includes(query); // Only filter by the "Name" column
+            });
+            displayData(filteredData);
+        }
+
+        // Initialize the page with the parsed CSV data
+        let csvDataArray = [];
+
+        // Load the CSV file and display data once it is loaded
+        loadCSVData().then(data => {
+            csvDataArray = data;
+            displayData(csvDataArray);
+        });
+    </script>
+</body>
+</html>
